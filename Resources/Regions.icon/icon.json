@@ -1,0 +1,47 @@
+{
+  "supported-platforms": {
+    "squares": "shared",
+    "circles": [
+      "watchOS"
+    ]
+  },
+  "fill": {
+    "solid": "srgb:0.96471,0.94118,0.89804,1.00000"
+  },
+  "groups": [
+    {
+      "layers": [
+        {
+          "image-name": "mark.png",
+          "name": "mark",
+          "glass": true
+        }
+      ],
+      "name": "Mark",
+      "specular": true,
+      "shadow": {
+        "kind": "layer-color",
+        "opacity": 0.26
+      },
+      "translucency": {
+        "enabled": true,
+        "value": 0.18
+      }
+    },
+    {
+      "layers": [
+        {
+          "image-name": "sheet.png",
+          "name": "sheet",
+          "glass": false
+        }
+      ],
+      "name": "Sheet",
+      "specular": false,
+      "shadow": {
+        "kind": "none",
+        "opacity": 0.0
+      }
+    }
+  ]
+}

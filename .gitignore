@@ -1,0 +1,13 @@
+.DS_Store
+.build/
+.derived/
+.swiftpm/
+build/
+dist/
+Regions.xcodeproj/
+Package.resolved
+buildServer.json
+*.xcarchive
+*.dmg
+*.log
+xcuserdata/
