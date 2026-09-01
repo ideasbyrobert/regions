@@ -11,7 +11,7 @@ struct FixtureControlView: View
         {
             Text("Window Movement Fixtures")
                 .font(.title2.weight(.semibold))
-            Text("Open a fixture, focus it, then exercise Places’s live Accessibility path.")
+            Text("Open a fixture, focus it, then exercise Regions’s live Accessibility path.")
                 .foregroundStyle(.secondary)
 
             Button("Open Resizable Window")

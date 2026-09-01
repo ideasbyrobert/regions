@@ -2,7 +2,7 @@
 set -euo pipefail
 
 MODE="${1:-run}"
-APP_NAME="Places"
+APP_NAME="Regions"
 BUNDLE_ID="com.ideasbyrobert.Places"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DERIVED_DATA="$ROOT_DIR/.build/DerivedData"
@@ -10,13 +10,14 @@ APP_BUNDLE="$DERIVED_DATA/Build/Products/Debug/$APP_NAME.app"
 APP_BINARY="$APP_BUNDLE/Contents/MacOS/$APP_NAME"
 DEVELOPMENT_TEAM_IDENTIFIER="${GRIDWINDOWMANAGER_DEVELOPMENT_TEAM:-X87D35HM5V}"
 DEVELOPMENT_SIGNING_IDENTITY="${GRIDWINDOWMANAGER_DEVELOPMENT_IDENTITY:-Apple Development}"
+XCODEGEN="${XCODEGEN:-xcodegen}"
 
 build_app()
 {
     cd "$ROOT_DIR"
-    xcodegen generate
+    "$XCODEGEN" generate
     xcodebuild \
-        -project "$ROOT_DIR/Places.xcodeproj" \
+        -project "$ROOT_DIR/Regions.xcodeproj" \
         -scheme "$APP_NAME" \
         -configuration Debug \
         -derivedDataPath "$DERIVED_DATA" \

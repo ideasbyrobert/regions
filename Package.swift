@@ -2,23 +2,23 @@
 import PackageDescription
 
 let package = Package(
-    name: "Places",
+    name: "Regions",
     platforms: [
         .macOS(.v15)
     ],
     products: [
-        .executable(name: "Places", targets: ["Places"])
+        .executable(name: "Regions", targets: ["Regions"])
     ],
     dependencies: [
         .package(url: "https://github.com/sparkle-project/Sparkle", exact: "2.9.4")
     ],
     targets: [
         .executableTarget(
-            name: "Places",
+            name: "Regions",
             dependencies: [
                 .product(name: "Sparkle", package: "Sparkle")
             ],
-            path: "Sources/Places",
+            path: "Sources/Regions",
             swiftSettings: [
                 .swiftLanguageMode(.v5)
             ],
@@ -34,12 +34,12 @@ let package = Package(
             ]
         ),
         .testTarget(
-            name: "PlacesTests",
+            name: "RegionsTests",
             dependencies: [
-                "Places",
+                "Regions",
                 "WindowFixtureApp"
             ],
-            path: "Tests/PlacesTests",
+            path: "Tests/RegionsTests",
             swiftSettings: [
                 .swiftLanguageMode(.v5)
             ]

@@ -1,7 +1,7 @@
 import AppKit
 
 let outputDirectory = CommandLine.arguments.count > 1 ? CommandLine.arguments[1] : "."
-let iconsetURL = URL(fileURLWithPath: outputDirectory).appendingPathComponent("Places.iconset")
+let iconsetURL = URL(fileURLWithPath: outputDirectory).appendingPathComponent("Regions.iconset")
 try? FileManager.default.createDirectory(at: iconsetURL, withIntermediateDirectories: true)
 
 func render(size: Int) -> Data?

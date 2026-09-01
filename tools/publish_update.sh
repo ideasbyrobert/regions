@@ -5,13 +5,25 @@ DMG="${1:?usage: publish_update.sh <notarized-dmg> <app-bundle>}"
 APP="${2:?usage: publish_update.sh <notarized-dmg> <app-bundle>}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-BUCKET="${PLACES_UPDATE_BUCKET:-ideasbyrobert-assets}"
-PREFIX="${PLACES_UPDATE_PREFIX:-places}"
-BASE_URL="${PLACES_UPDATE_URL:-https://downloads.ideasbyrobert.com/places}"
+WRANGLER_CMD="${REGIONS_WRANGLER:-${PLACES_WRANGLER:-}}"
+if [ -n "$WRANGLER_CMD" ]; then
+    read -r -a WRANGLER <<< "$WRANGLER_CMD"
+elif command -v wrangler >/dev/null 2>&1; then
+    WRANGLER=(wrangler)
+elif command -v npx >/dev/null 2>&1; then
+    WRANGLER=(npx --yes wrangler)
+else
+    echo "error: wrangler is missing (install it or set REGIONS_WRANGLER)" >&2
+    exit 65
+fi
+
+BUCKET="${REGIONS_UPDATE_BUCKET:-${PLACES_UPDATE_BUCKET:-ideasbyrobert-regions}}"
+PREFIX="${REGIONS_UPDATE_PREFIX:-${PLACES_UPDATE_PREFIX:-regions}}"
+BASE_URL="${REGIONS_UPDATE_URL:-${PLACES_UPDATE_URL:-https://regions.ideasbyrobert.com}}"
 # Deliberately still "Spread": this names the keychain account holding the
 # Sparkle EdDSA private key whose public half is pinned in the app as
 # SUPublicEDKey. Renaming it would not rename the key, it would fail to find it.
-ACCOUNT="${PLACES_SPARKLE_ACCOUNT:-Spread}"
+ACCOUNT="${REGIONS_SPARKLE_ACCOUNT:-${PLACES_SPARKLE_ACCOUNT:-Spread}}"
 CHANNEL="$ROOT/.derived/update-channel"
 ARCHIVES="$CHANNEL/archives"
 APPCAST="$ARCHIVES/appcast.xml"
@@ -46,7 +58,7 @@ if [ ! -f "$APPCAST" ]; then
     fi
 fi
 
-ZIP="$ARCHIVES/Places-$VERSION-$BUILD.zip"
+ZIP="$ARCHIVES/Regions-$VERSION-$BUILD.zip"
 say "Archiving $APP -> $(basename "$ZIP")"
 rm -f "$ZIP"
 ditto -c -k --sequesterRsrc --keepParent "$APP" "$ZIP"
@@ -75,16 +87,16 @@ put()
     local args=(r2 object put "$BUCKET/$PREFIX/$1" --remote --file "$2"
                 --content-type "$3" --cache-control "$4")
     [ $# -ge 5 ] && args+=(--content-disposition "$5")
-    wrangler "${args[@]}" >/dev/null
+    "${WRANGLER[@]}" "${args[@]}" >/dev/null
     echo "    $BASE_URL/$1"
 }
 
 say "Uploading to Cloudflare R2 ($BUCKET/$PREFIX)"
 put "$(basename "$ZIP")" "$ZIP" "application/zip" "public, max-age=31536000, immutable"
-put "Places-$VERSION-$BUILD.dmg" "$DMG" "application/x-apple-diskimage" \
+put "Regions-$VERSION-$BUILD.dmg" "$DMG" "application/x-apple-diskimage" \
     "public, max-age=31536000, immutable"
-put "latest/Places.dmg" "$DMG" "application/x-apple-diskimage" \
-    "no-cache, no-store, must-revalidate" 'attachment; filename="Places.dmg"'
+put "latest/Regions.dmg" "$DMG" "application/x-apple-diskimage" \
+    "no-cache, no-store, must-revalidate" 'attachment; filename="Regions.dmg"'
 put "appcast.xml" "$APPCAST" "application/xml; charset=utf-8" \
     "no-cache, no-store, must-revalidate"
 
@@ -93,11 +105,12 @@ put "appcast.xml" "$APPCAST" "application/xml; charset=utf-8" \
 # page cannot advertise a build that was never published.
 SHARE="$ROOT/ReleaseShare"
 if [ -d "$SHARE" ]; then
-    PAGE="$(mktemp /private/tmp/places-download.XXXXXX)"
+    PAGE="$(mktemp /private/tmp/regions-download.XXXXXX)"
     # Read from the built bundle, the same source VERSION and BUILD come from,
     # so the page describes the artifact actually being published.
     MINIMUM="$(defaults read "$APP/Contents/Info.plist" LSMinimumSystemVersion)"
-    sed "s|VERSION_LINE|$VERSION ($BUILD) · macOS $MINIMUM+ · Notarized|" \
+    sed -e "s|DOWNLOAD_BASE_URL|$BASE_URL|g" \
+        -e "s|VERSION_LINE|$VERSION ($BUILD) · macOS $MINIMUM+ · Notarized|" \
         "$SHARE/download.html" > "$PAGE"
     put "download" "$PAGE" "text/html; charset=utf-8" "no-cache, no-store, must-revalidate"
     rm -f "$PAGE"
@@ -126,13 +139,13 @@ done
 [ "${GOT:-}" = "$BUILD" ] || { echo "error: public feed never showed build $BUILD" >&2; exit 65; }
 
 curl --fail --silent --show-error --head --location "$BASE_URL/$(basename "$ZIP")" -o /dev/null
-curl --fail --silent --show-error --head --location "$BASE_URL/latest/Places.dmg" -o /dev/null
+curl --fail --silent --show-error --head --location "$BASE_URL/latest/Regions.dmg" -o /dev/null
 
 cat <<SUMMARY
 
-Published Places $VERSION (build $BUILD)
+Published Regions $VERSION (build $BUILD)
   Sparkle feed : $REMOTE_APPCAST
   Update ZIP   : $BASE_URL/$(basename "$ZIP")
-  Stable DMG   : $BASE_URL/latest/Places.dmg
+  Stable DMG   : $BASE_URL/latest/Regions.dmg
   Download page: $BASE_URL/download
 SUMMARY

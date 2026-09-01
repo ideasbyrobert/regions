@@ -1,4 +1,4 @@
-name: Places
+name: Regions
 options:
   bundleIdPrefix: com.ideasbyrobert
   createIntermediateGroups: true
@@ -25,12 +25,12 @@ settings:
     SWIFT_STRICT_CONCURRENCY: complete
     SWIFT_VERSION: "6.0"
 targets:
-  Places:
+  Regions:
     type: application
     platform: macOS
     sources:
-      - path: Sources/Places
-      - path: Resources/Places.icon
+      - path: Sources/Regions
+      - path: Resources/Regions.icon
         buildPhase: resources
     info:
       path: .derived/xcodegen/Info.plist
@@ -38,7 +38,9 @@ targets:
         LSApplicationCategoryType: public.app-category.utilities
         LSMultipleInstancesProhibited: true
         LSUIElement: true
-        NSAppleEventsUsageDescription: Places uses Terminal Automation only to set the selected tab in each Terminal window to 80 columns by 48 rows when you choose Arrange App Windows 4 × 2.
+        CFBundleShortVersionString: "1.1.0"
+        CFBundleVersion: "5"
+        NSAppleEventsUsageDescription: Regions uses Terminal Automation only to set the selected tab in each Terminal window to 80 columns by 48 rows when you choose Arrange App Windows 4 × 2.
         SUFeedURL: https://downloads.ideasbyrobert.com/places/appcast.xml
         SUPublicEDKey: +vhVXgERIDkF9jUDCo/eorsxZ8NP52N+ILOpYHZCiKQ=
         SUEnableAutomaticChecks: true
@@ -47,15 +49,17 @@ targets:
       - package: Sparkle
         product: Sparkle
     entitlements:
-      path: Resources/Places.entitlements
+      path: Resources/Regions.entitlements
       properties:
         com.apple.security.automation.apple-events: true
     settings:
       base:
-        ASSETCATALOG_COMPILER_APPICON_NAME: Places
+        ASSETCATALOG_COMPILER_APPICON_NAME: Regions
         COMBINE_HIDPI_IMAGES: YES
+        # Keep the established bundle identifier so existing installs can
+        # receive this renamed Regions build through the same Sparkle feed.
         PRODUCT_BUNDLE_IDENTIFIER: com.ideasbyrobert.Places
-        PRODUCT_NAME: Places
+        PRODUCT_NAME: Regions
   WindowFixtureApp:
     type: application
     platform: macOS
@@ -65,49 +69,49 @@ targets:
       path: Resources/FixtureInfo.plist
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.ideasbyrobert.Places.WindowFixtureApp
+        PRODUCT_BUNDLE_IDENTIFIER: com.ideasbyrobert.Regions.WindowFixtureApp
         PRODUCT_NAME: WindowFixtureApp
-  PlacesTests:
+  RegionsTests:
     type: bundle.unit-test
     platform: macOS
     sources:
-      - path: Tests/PlacesTests
+      - path: Tests/RegionsTests
     dependencies:
-      - target: Places
+      - target: Regions
       - target: WindowFixtureApp
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
-        INFOPLIST_KEY_NSAppleEventsUsageDescription: Places tests automate disposable Terminal windows only during the explicit live Terminal test.
-        PRODUCT_BUNDLE_IDENTIFIER: com.ideasbyrobert.PlacesTests
-  PlacesUITests:
+        INFOPLIST_KEY_NSAppleEventsUsageDescription: Regions tests automate disposable Terminal windows only during the explicit live Terminal test.
+        PRODUCT_BUNDLE_IDENTIFIER: com.ideasbyrobert.RegionsTests
+  RegionsUITests:
     type: bundle.ui-testing
     platform: macOS
     sources:
-      - path: Tests/PlacesUITests
+      - path: Tests/RegionsUITests
     dependencies:
-      - target: Places
+      - target: Regions
       - target: WindowFixtureApp
     settings:
       base:
         ENABLE_HARDENED_RUNTIME: NO
         GENERATE_INFOPLIST_FILE: YES
-        PRODUCT_BUNDLE_IDENTIFIER: com.ideasbyrobert.PlacesUITests
+        PRODUCT_BUNDLE_IDENTIFIER: com.ideasbyrobert.RegionsUITests
 schemes:
-  Places:
+  Regions:
     build:
       targets:
-        Places: all
+        Regions: all
         WindowFixtureApp: [test]
-        PlacesTests: [test]
-        PlacesUITests: [test]
+        RegionsTests: [test]
+        RegionsUITests: [test]
     run:
       config: Debug
     test:
       config: Debug
       targets:
-        - PlacesTests
-        - PlacesUITests
+        - RegionsTests
+        - RegionsUITests
     archive:
       config: Release
   WindowFixtureApp:

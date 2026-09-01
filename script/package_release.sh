@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-APP_NAME="Places"
+APP_NAME="Regions"
 BUNDLE_ID="com.ideasbyrobert.Places"
 APP_IDENTITY="${APP_IDENTITY:-Developer ID Application: ROBERT KARAPETYAN (X87D35HM5V)}"
 NOTARY_PROFILE="${NOTARY_PROFILE:-AC_NOTARY}"
@@ -10,11 +10,11 @@ TEAM_ID="${TEAM_ID:-X87D35HM5V}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 INFO_PLIST="$ROOT/Resources/Info.plist"
-ENTITLEMENTS="$ROOT/Resources/Places.entitlements"
+ENTITLEMENTS="$ROOT/Resources/Regions.entitlements"
 VERSION="$(plutil -extract CFBundleShortVersionString raw "$INFO_PLIST")"
 BUILD="$(plutil -extract CFBundleVersion raw "$INFO_PLIST")"
 DIST="$ROOT/dist"
-STAGE="$(mktemp -d /private/tmp/places-release.XXXXXX)"
+STAGE="$(mktemp -d /private/tmp/regions-release.XXXXXX)"
 BUNDLE="$STAGE/$APP_NAME.app"
 
 cleanup()
@@ -49,25 +49,26 @@ build_slice()
 {
     local arch="$1"
     local triple="$arch-apple-macosx15.0"
+    local scratch_dir="$ROOT/.build/release-$arch"
+    local bin_dir
     say "    compiling $arch ($triple)"
-    swift build -c release --triple "$triple"
+    swift build -c release --triple "$triple" --scratch-path "$scratch_dir"
+    bin_dir="$(swift build -c release --triple "$triple" --scratch-path "$scratch_dir" --show-bin-path)"
+    [ -x "$bin_dir/$APP_NAME" ] || die "$arch build product missing: $bin_dir/$APP_NAME"
+    cp "$bin_dir/$APP_NAME" "$STAGE/$arch-$APP_NAME"
 }
 
 build_slice arm64
 build_slice x86_64
 
-ARM_BUILD_DIR="$ROOT/.build/arm64-apple-macosx/release"
-X86_BUILD_DIR="$ROOT/.build/x86_64-apple-macosx/release"
-
-[ -x "$ARM_BUILD_DIR/$APP_NAME" ] || die "arm64 build product missing: $ARM_BUILD_DIR/$APP_NAME"
-[ -x "$X86_BUILD_DIR/$APP_NAME" ] || die "x86_64 build product missing: $X86_BUILD_DIR/$APP_NAME"
-
 UNIVERSAL_DIR="$STAGE/universal"
 mkdir -p "$UNIVERSAL_DIR"
 APP_EXEC="$UNIVERSAL_DIR/$APP_NAME"
 
-lipo -create "$ARM_BUILD_DIR/$APP_NAME" "$X86_BUILD_DIR/$APP_NAME" -output "$APP_EXEC"
-lipo "$APP_EXEC" -verify_arch x86_64 arm64 || die "release executable is not universal: $APP_EXEC"
+lipo -create "$STAGE/arm64-$APP_NAME" "$STAGE/x86_64-$APP_NAME" -output "$APP_EXEC"
+for architecture in x86_64 arm64; do
+    lipo "$APP_EXEC" -verify_arch "$architecture" || die "release executable is missing $architecture: $APP_EXEC"
+done
 say "    app architectures: $(lipo "$APP_EXEC" -archs)"
 
 say "2. Assembling App Bundle ($BUNDLE)"
@@ -80,8 +81,8 @@ cp "$INFO_PLIST" "$BUNDLE/Contents/Info.plist"
 say "3. Rendering and bundling App Icon"
 ICON_TMP="$(mktemp -d)"
 if swift "$ROOT/tools/make_icon.swift" "$ICON_TMP" >/dev/null 2>&1 \
-   && iconutil -c icns "$ICON_TMP/Places.iconset" -o "$BUNDLE/Contents/Resources/Places.icns" 2>/dev/null; then
-    say "    bundled Places.icns"
+   && iconutil -c icns "$ICON_TMP/Regions.iconset" -o "$BUNDLE/Contents/Resources/Regions.icns" 2>/dev/null; then
+    say "    bundled Regions.icns"
 else
     say "    (icon generation skipped)"
 fi
@@ -154,10 +155,12 @@ if xcrun stapler validate "$MOUNT_POINT/$APP_NAME.app" >/dev/null 2>&1; then
         diskutil eject "$MOUNT_POINT" >/dev/null 2>&1 || true
         die "the app inside the DMG has invalid nested code signatures"
     }
-    lipo "$MOUNT_POINT/$APP_NAME.app/Contents/MacOS/$APP_NAME" -verify_arch x86_64 arm64 || {
-        diskutil eject "$MOUNT_POINT" >/dev/null 2>&1 || true
-        die "the app inside the DMG is not universal"
-    }
+    for architecture in x86_64 arm64; do
+        lipo "$MOUNT_POINT/$APP_NAME.app/Contents/MacOS/$APP_NAME" -verify_arch "$architecture" || {
+            diskutil eject "$MOUNT_POINT" >/dev/null 2>&1 || true
+            die "the app inside the DMG is missing $architecture"
+        }
+    done
     diskutil eject "$MOUNT_POINT" >/dev/null 2>&1 || true
     say "    the universal app is stapled and all nested code is intact inside the DMG"
 else
@@ -172,10 +175,10 @@ cp "$DMG" "$DIST/$APP_NAME-$VERSION-$BUILD.dmg"
 (cd "$DIST" && shasum -a 256 "$APP_NAME.dmg" "$APP_NAME-$VERSION-$BUILD.dmg") > "$DIST/SHA256SUMS"
 
 say "12. Publishing to the Sparkle update channel on Cloudflare R2"
-if [ "${PLACES_PUBLISH:-1}" = "1" ]; then
+if [ "${REGIONS_PUBLISH:-${PLACES_PUBLISH:-1}}" = "1" ]; then
     "$ROOT/tools/publish_update.sh" "$DIST/$APP_NAME.dmg" "$BUNDLE"
 else
-    say "    (skipped publishing: PLACES_PUBLISH=0)"
+	say "    (skipped publishing: REGIONS_PUBLISH=0)"
 fi
 
 say "=== Release Complete ==="

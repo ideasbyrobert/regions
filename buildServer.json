@@ -12,8 +12,8 @@
 	"argv": [
 		"/Users/robert/.local/bin/xcode-build-server"
 	],
-	"workspace": "/Users/robert/build-with-xcode/window-manager/Places.xcodeproj/project.xcworkspace",
-	"build_root": "/Users/robert/Library/Developer/Xcode/DerivedData/Places-gitguxrxgmrsrqcthbhizrqivpqz",
-	"scheme": "Places",
+	"workspace": "/Users/robert/build-with-xcode/window-manager/Regions.xcodeproj/project.xcworkspace",
+	"build_root": "/Users/robert/Library/Developer/Xcode/DerivedData/Regions-gitguxrxgmrsrqcthbhizrqivpqz",
+	"scheme": "Regions",
 	"kind": "xcode"
 }
