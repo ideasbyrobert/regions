@@ -15,6 +15,14 @@ packages:
     url: https://github.com/sparkle-project/Sparkle
     exactVersion: 2.9.4
 settings:
+  # @testable import needs the app module compiled with -enable-testing, which is a Debug-only
+  # setting and was never declared, so every test file failed to import Regions. Debug also builds
+  # the active architecture alone: without it the module is emitted for arm64 and x86_64 while the
+  # test destination is one of them, and the other reads as an incompatible target.
+  configs:
+    Debug:
+      ENABLE_TESTABILITY: YES
+      ONLY_ACTIVE_ARCH: YES
   base:
     ARCHS: "$(ARCHS_STANDARD)"
     CLANG_ENABLE_MODULES: YES
@@ -84,6 +92,11 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_NSAppleEventsUsageDescription: Regions tests automate disposable Terminal windows only during the explicit live Terminal test.
         PRODUCT_BUNDLE_IDENTIFIER: com.ideasbyrobert.RegionsTests
+        PRODUCT_NAME: RegionsTests
+        # A macOS unit test bundle resolves its symbols against the host executable, and needs
+        # both halves to do it. TEST_HOST was set and BUNDLE_LOADER was not, so the bundle ran
+        # against the app without linking it: every type the tests touch came back undefined.
+        BUNDLE_LOADER: $(TEST_HOST)
   RegionsUITests:
     type: bundle.ui-testing
     platform: macOS
@@ -97,6 +110,7 @@ targets:
         ENABLE_HARDENED_RUNTIME: NO
         GENERATE_INFOPLIST_FILE: YES
         PRODUCT_BUNDLE_IDENTIFIER: com.ideasbyrobert.RegionsUITests
+        PRODUCT_NAME: RegionsUITests
 schemes:
   Regions:
     build:
