@@ -1,14 +1,10 @@
 import SwiftUI
 
-/// A slider over a point measurement, with its current value read out beside it.
-///
-/// The two rows this replaces were written separately and had drifted: their
-/// readouts reserved 42 and 48 points, so the sliders above and below each
-/// other ended at different places. One row means one width, and the width is
-/// derived from the widest value the range can actually produce rather than
-/// guessed.
 struct PointSliderRow: View
 {
+    private static let digitWidth: CGFloat = 10
+    private static let unitLabelWidth: CGFloat = 22
+
     private let label: String
     private let value: Binding<Double>
     private let range: ClosedRange<Double>
@@ -27,12 +23,15 @@ struct PointSliderRow: View
         self.step = step
     }
 
-    /// Wide enough for the largest reading the range allows, so the column
-    /// never reflows as the slider moves.
+    private var digitsInWidestReading: Int
+    {
+        String(Int(range.upperBound)).count
+    }
+
     private var readoutWidth: CGFloat
     {
-        let widestDigits = String(Int(range.upperBound)).count
-        return CGFloat(widestDigits) * 10 + 22
+        CGFloat(digitsInWidestReading) * Self.digitWidth
+            + Self.unitLabelWidth
     }
 
     var body: some View
