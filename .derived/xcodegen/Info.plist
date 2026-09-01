@@ -15,9 +15,9 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0</string>
+	<string>1.1.0</string>
 	<key>CFBundleVersion</key>
-	<string>1</string>
+	<string>5</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.utilities</string>
 	<key>LSMultipleInstancesProhibited</key>
@@ -25,7 +25,7 @@
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSAppleEventsUsageDescription</key>
-	<string>Places uses Terminal Automation only to set the selected tab in each Terminal window to 80 columns by 48 rows when you choose Arrange App Windows 4 × 2.</string>
+	<string>Regions uses Terminal Automation only to set the selected tab in each Terminal window to 80 columns by 48 rows when you choose Arrange App Windows 4 × 2.</string>
 	<key>SUEnableAutomaticChecks</key>
 	<true/>
 	<key>SUFeedURL</key>
