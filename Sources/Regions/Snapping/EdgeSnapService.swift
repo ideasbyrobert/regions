@@ -83,8 +83,13 @@ final class EdgeSnapService
     private func begin(at location: CGPoint)
     {
         reset()
-        guard preferences.edgeSnappingEnabled,
-              authorization.isTrusted
+        guard preferences.edgeSnappingEnabled
+        else
+        {
+            return
+        }
+        authorization.refresh()
+        guard authorization.isTrusted
         else
         {
             return

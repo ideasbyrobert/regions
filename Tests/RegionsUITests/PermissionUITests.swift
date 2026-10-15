@@ -17,22 +17,29 @@ final class PermissionUITests: XCTestCase
         if required.exists
         {
             XCTAssertTrue(application.buttons["Open Privacy & Security"].exists)
+            XCTAssertTrue(application.buttons["Quit"].exists)
             XCTAssertTrue(
                 application.staticTexts.matching(
                     NSPredicate(
                         format: "label CONTAINS %@",
-                        "Device Control and Data Access"
+                        "Click Open Privacy & Security to add Regions to Accessibility."
                     )
                 ).firstMatch.exists
             )
             XCTAssertTrue(
                 application.staticTexts.matching(
-                    NSPredicate(format: "label CONTAINS %@", "Regions.app itself")
+                    NSPredicate(
+                        format: "label CONTAINS %@",
+                        "Turn on Regions in System Settings"
+                    )
                 ).firstMatch.exists
             )
             XCTAssertTrue(
                 application.staticTexts.matching(
-                    NSPredicate(format: "label CONTAINS %@", "Tests-Runner")
+                    NSPredicate(
+                        format: "label CONTAINS %@",
+                        "The app will exit now so the permission is in place when you start it again."
+                    )
                 ).firstMatch.exists
             )
             XCTAssertFalse(application.buttons["Open Accessibility Settings"].exists)

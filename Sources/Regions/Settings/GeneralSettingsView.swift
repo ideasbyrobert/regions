@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 struct GeneralSettingsView: View
@@ -143,8 +144,18 @@ struct GeneralSettingsView: View
         .padding(20)
         .task
         {
+            authorization.refresh()
             launchAtLoginEnabled = launchAtLogin.isEnabled
             await terminalWindowSizing.refreshAuthorization()
+        }
+        .onReceive(
+            NotificationCenter.default.publisher(
+                for: NSApplication.didBecomeActiveNotification
+            )
+        )
+        {
+            _ in
+            authorization.refresh()
         }
         .onChange(of: launchAtLoginEnabled)
         {

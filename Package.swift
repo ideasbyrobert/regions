@@ -26,7 +26,7 @@ let package = Package(
                 .unsafeFlags(["-Xlinker", "-rpath", "-Xlinker", "@executable_path/../Frameworks"])
             ]
         ),
-        .target(
+        .executableTarget(
             name: "WindowFixtureApp",
             path: "Sources/WindowFixtureApp",
             swiftSettings: [
@@ -36,8 +36,7 @@ let package = Package(
         .testTarget(
             name: "RegionsTests",
             dependencies: [
-                "Regions",
-                "WindowFixtureApp"
+                "Regions"
             ],
             path: "Tests/RegionsTests",
             swiftSettings: [

@@ -52,17 +52,8 @@ hygiene:
 	@test -z "$$(find . -type f -empty -not -path './.git/*' -not -path './.build/*' -not -path './.derived/*' -print -quit)"
 	@test -z "$$(find . -type d -empty -not -path './.git/*' -not -path './.build/*' -not -path './.derived/*' -print -quit)"
 
-build: generate
-	xcodebuild \
-		-project "$(PROJECT)" \
-		-scheme "$(SCHEME)" \
-		-configuration Debug \
-		-derivedDataPath "$(DERIVED_DATA)" \
-		CODE_SIGNING_ALLOWED=YES \
-		CODE_SIGN_STYLE=Manual \
-		CODE_SIGN_IDENTITY="$(DEVELOPMENT_IDENTITY)" \
-		DEVELOPMENT_TEAM="$(DEVELOPMENT_TEAM)" \
-		build
+build:
+	./script/build_and_run.sh --build-only
 
 package-build:
 	swift build -c release
@@ -95,7 +86,7 @@ verify:
 	./script/build_and_run.sh --verify
 
 smoke: build
-	@set -euo pipefail; bundle="$(DERIVED_DATA)/Build/Products/Debug/$(APP_NAME).app"; test -x "$$bundle/Contents/MacOS/$(APP_NAME)"; plutil -p "$$bundle/Contents/Info.plist" >/dev/null; echo "smoke: $$bundle"
+	@set -euo pipefail; bundle="$(DERIVED_DATA)/Build/Products/Debug/$(APP_NAME).app"; test -x "$$bundle/Contents/MacOS/$(APP_NAME)"; lipo "$$bundle/Contents/MacOS/$(APP_NAME)" -verify_arch x86_64; lipo "$$bundle/Contents/MacOS/$(APP_NAME)" -verify_arch arm64; plutil -p "$$bundle/Contents/Info.plist" >/dev/null; echo "smoke: $$bundle"
 
 lint:
 	@set -euo pipefail; swift package dump-package >/dev/null; plutil -lint Resources/Info.plist Resources/FixtureInfo.plist Resources/Regions.entitlements; bash -n release.sh script/*.sh tools/*.sh

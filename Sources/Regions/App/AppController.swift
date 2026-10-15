@@ -62,6 +62,8 @@ final class AppController: ObservableObject
         }
     )
     private var isStarted = false
+    private var hasStartedServices = false
+    private var authorizationCancellable: AnyCancellable?
     private var availabilityRequestIdentifier = UUID()
     private var availabilityTask: Task<Void, Never>?
     private var availabilityProcessIdentifier: pid_t?
@@ -79,15 +81,8 @@ final class AppController: ObservableObject
             return
         }
         isStarted = true
-        tracker.start()
-        if let targetBundleIdentifier = liveUITestTargetBundleIdentifier,
-           let targetApplication = NSRunningApplication.runningApplications(
-               withBundleIdentifier: targetBundleIdentifier
-           ).first
-        {
-            tracker.pinTargetApplicationForTesting(targetApplication)
-        }
         authorization.refresh()
+        observeAuthorization()
         if isUITesting
         {
             preferences.gridDimension = .three
@@ -96,9 +91,14 @@ final class AppController: ObservableObject
             preferences.adjustmentStep = 40
             preferences.edgeSnappingEnabled = false
         }
-        registerPaletteShortcut(preferences.paletteShortcut)
-        edgeSnapService.start()
-        logger.info("Application services started")
+        if authorization.isTrusted || isUITesting
+        {
+            startServicesIfNeeded()
+        }
+        else
+        {
+            batchArrangementAvailability = .unavailable(.accessibilityPermissionRequired)
+        }
 
         if isLiveArrangementUITesting
         {
@@ -142,6 +142,52 @@ final class AppController: ObservableObject
         {
             showPermissionWindow()
         }
+    }
+
+    private func observeAuthorization()
+    {
+        authorizationCancellable = authorization.$isTrusted
+            .removeDuplicates()
+            .dropFirst()
+            .sink
+            {
+                [weak self] isTrusted in
+                guard let self
+                else
+                {
+                    return
+                }
+                if isTrusted
+                {
+                    startServicesIfNeeded()
+                    if statusMessage == MoveFailure.accessibilityPermissionRequired.message
+                    {
+                        statusMessage = nil
+                    }
+                    refreshBatchArrangementAvailability()
+                }
+            }
+    }
+
+    private func startServicesIfNeeded()
+    {
+        guard !hasStartedServices
+        else
+        {
+            return
+        }
+        hasStartedServices = true
+        tracker.start()
+        if let targetBundleIdentifier = liveUITestTargetBundleIdentifier,
+           let targetApplication = NSRunningApplication.runningApplications(
+               withBundleIdentifier: targetBundleIdentifier
+           ).first
+        {
+            tracker.pinTargetApplicationForTesting(targetApplication)
+        }
+        registerPaletteShortcut(preferences.paletteShortcut)
+        edgeSnapService.start()
+        logger.info("Application services started")
     }
 
     func openPalette()
